@@ -1,0 +1,18 @@
+## bitwarden.persistentvolume.yml
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: bitwarden-ssd
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/ssd/bitwarden"
+---
+
