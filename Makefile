@@ -8,3 +8,5 @@ apply:
 	terraform -chdir=terraform apply -auto-approve -input=false --parallelism=1
 destroy:
 	terraform -chdir=terraform destroy -auto-approve -input=false
+fmt:
+	terraform -chdir=terraform fmt --recursive

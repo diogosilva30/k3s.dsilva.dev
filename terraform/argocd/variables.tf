@@ -16,9 +16,3 @@ variable "cloudflare_dns_zone" {
   description = "The cloudflare DNS zone (e.g. yourdomain.com)"
   type        = string
 }
-# variable "kubeconfig_file_path" {
-#   type        = string
-#   description = "The path for the KUBECONFIG"
-# }
-
-

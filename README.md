@@ -69,6 +69,7 @@ To use it do: `export KUBECONFIG=./terraform/kubeconfig`
 Then you can interact with your cluster via `kubectl`.
 
 To login into ArgoCD the default username is `admin` and the default password can be found using: 
+
 `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo`
 
   
@@ -125,4 +126,4 @@ If you'd like to contribute to this project, please feel free to submit a pull r
 
   
 
-Thank you for checking out lab.dsilva.dev!
+Thank you for checking out k3s.dsilva.dev!
