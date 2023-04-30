@@ -40,12 +40,12 @@ variable "disk_size" {
 variable "memory" {
   description = "The ammount of memory. E.g. '2048'"
   type        = number
-  default     = 1024 # 1GB of RAM
+  default     = 3072 # 3GB of RAM
 }
 variable "cores" {
   description = "The number of CPU cores of the VM"
   type        = number
-  default     = 1
+  default     = 4
 }
 # SSH configuration
 variable "ciuser" {
