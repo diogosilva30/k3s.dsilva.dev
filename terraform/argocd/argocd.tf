@@ -21,6 +21,12 @@ resource "kubernetes_ingress_v1" "argocd-ingress" {
       "kubernetes.io/ingress.class" = "traefik"
       # This is really important! Sets correct CNAME to the Cloudflare Tunnel record
       "external-dns.alpha.kubernetes.io/target" = format("%s.%s", var.cloudflare_tunnel_name, var.cloudflare_dns_zone)
+      # Set annotations to be picked up by "homepage" dashboard
+      "gethomepage.dev/enabled": "true"
+      "gethomepage.dev/description": "Kubernetes Git-Ops"
+      "gethomepage.dev/group": "Monitoring"
+      "gethomepage.dev/icon": "https://argo-cd.readthedocs.io/en/stable/assets/logo.png"
+      "gethomepage.dev/name": "ArgoCD"
     }
   }
 

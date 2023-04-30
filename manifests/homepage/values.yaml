@@ -50,7 +50,26 @@ ingress:
 
 # All the config files for Homepage can be specified under their relevant config block.
 config:
+  title: Diogo's Silva Lab
+
   services:
+    - Finance:
+        - CoinMarketCap:
+            icon: bitcoin
+            href: https://coinmarketcap.com/portfolio-tracker/
+            description: Crypto portfolio tracker
+            # widget:
+            #   type: coinmarketcap
+            #   currency: EUR # Optional
+            #   symbols: [BTC, AVAX, ADA, NEXO]
+            #   key: {{HOMEPAGE_VAR_COINMARKETCAP_API}}
+              
+    - Home: 
+        - HomeAssistant:
+            icon: homeassistant
+            href: https://home.dsilva.dev
+            description: Home assistant instance
+  
   
   # To use an existing ConfigMap uncomment this line and specify the name
   bookmarks:
@@ -69,7 +88,9 @@ config:
         - Self Hosted:
             - abbr: SH
               href: https://github.com/awesome-selfhosted/awesome-selfhosted
-       
+        - Dashboard Icons:
+            - icon: mdi-simple-icons
+              href: https://github.com/walkxcode/dashboard-icons/tree/main/png
     - Social:
         - LinkedIn:
             - icon: linkedin
@@ -88,7 +109,7 @@ config:
     - greeting:
         text_size: xl
         text: Welcome Diogo Silva!
-
+    
     # Widget for weather
     - openmeteo:
         label: Weather # optional
