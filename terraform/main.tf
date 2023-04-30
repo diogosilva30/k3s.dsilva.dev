@@ -32,7 +32,6 @@ module "proxmox-nodes" {
   proxmox_api_token_secret = var.proxmox_api_token_secret
   proxmox_api_url          = var.proxmox_api_url
   server_node_count        = var.server_node_count
-  cluster_name             = var.cluster_name
   k3s_version              = var.k3s_version
   disk_size                = var.disk_size
   memory                   = var.memory

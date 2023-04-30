@@ -21,10 +21,6 @@ variable "server_node_count" {
   description = "The number of server nodes in the kubernetes cluster (odd number required)."
   default     = 3
 }
-variable "cluster_name" {
-  type    = string
-  default = "services"
-}
 variable "k3s_version" {
   description = "The version of k3s"
   type        = string
