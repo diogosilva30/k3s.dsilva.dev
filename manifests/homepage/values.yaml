@@ -58,16 +58,23 @@ config:
 
   # To use an existing ConfigMap uncomment this line and specify the name
   bookmarks:
-    - Developer:
-        - Self Hosted:
-            - abbr: sh
-            - href: https://github.com/awesome-selfhosted/awesome-selfhosted
+    - Git:
         - Github:
             - abbr: GH
-              href: https://github.com/
+              href: https://github.com/diogosilva30
+        - GitLab:
+            - abbr: GL
+              href: https://gitlab.ubiwhere.com/desilva
+  
+    - Developer Tools:
+        - Self Hosted:
+            - abbr: SH
+              href: https://github.com/awesome-selfhosted/awesome-selfhosted
+       
+    - Social:
         - LinkedIn:
             - abbr: LI
-              -href: https://www.linkedin.com/in/diogosilva30/
+              href: https://www.linkedin.com/in/diogosilva30/
   services:
     - My First Group:
         - My First Service:
