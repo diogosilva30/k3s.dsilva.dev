@@ -68,10 +68,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - uptimekuma.dsilva.dev
-    secretName: uptimekuma.dsilva.dev
+    - uptime.dsilva.dev
+    secretName: uptime.dsilva.dev
   rules:
-  - host: uptimekuma.dsilva.dev
+  - host: uptime.dsilva.dev
     http:
       paths:
       - path: /
