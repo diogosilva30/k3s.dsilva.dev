@@ -1,7 +1,7 @@
 resource "proxmox_vm_qemu" "k3s-server-nodes" {
   count       = var.server_node_count
-  name        = "${var.cluster_name}-k3s-server-node-${count.index}"
-  desc        = "Kubernetes server node ${count.index} for ${var.cluster_name}"
+  name        = "k3s-server-node-${count.index}"
+  desc        = "Kubernetes server node ${count.index}"
   target_node = "proxmox"
 
   # Hardware configuration

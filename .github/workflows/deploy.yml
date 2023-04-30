@@ -144,3 +144,4 @@ jobs:
           TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
           TF_VAR_cloudflare_dns_zone: "dsilva.dev"
           TF_VAR_cloudflare_tunnel_name: "k3s"
+          TF_VAR_coinmarketcap_api_key: ${{ secrets.COINMARKETCAP_API_KEY }}

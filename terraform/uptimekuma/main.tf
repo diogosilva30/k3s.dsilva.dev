@@ -1,13 +1,15 @@
+resource "kubectl_manifest" "uptimekuma" {
+  yaml_body = <<YAML
 kind: Namespace
 apiVersion: v1
 metadata:
-  name: kuma
+  name: ${var.namespace}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: uptime-kuma-svc
-  namespace: kuma
+  name: ${var.service_name}
+  namespace: ${var.namespace}
 spec:
   selector:
     app: uptime-kuma
@@ -19,10 +21,10 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: uptime-kuma
-  namespace: kuma
+  namespace: ${var.namespace}
 spec:
   replicas: 1
-  serviceName: uptime-kuma-svc
+  serviceName: ${var.service_name}
   selector:
     matchLabels:
       app: uptime-kuma
@@ -61,10 +63,10 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: uptime-kuma
-  namespace: kuma
+  namespace: ${var.namespace}
   annotations:
     kubernetes.io/ingress.class: "traefik"
-    external-dns.alpha.kubernetes.io/target: "k3s.dsilva.dev"
+    external-dns.alpha.kubernetes.io/target: "${var.externaldns_target}"
     gethomepage.dev/enabled: "true"
     gethomepage.dev/description: Downtime monitoring service
     gethomepage.dev/group: Monitoring
@@ -72,13 +74,17 @@ metadata:
     gethomepage.dev/name: Up Time Kuma
 spec:
   rules:
-    - host: uptime.dsilva.dev
+    - host: ${var.hostname}
       http:
         paths:
           - backend:
               service:
-                name: uptime-kuma-svc
+                name: ${var.service_name}
                 port:
                   number: 3001
             path: /
             pathType: Prefix
+
+  YAML
+}
+

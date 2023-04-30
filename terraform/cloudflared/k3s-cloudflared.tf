@@ -7,6 +7,7 @@
 # the ID of the Cloudflared tunnel and ingress rules for routing traffic to the correct services.
 # The secret stores credentials for the Cloudflared deployment, including the account tag, 
 # tunnel ID, tunnel name, and tunnel secret.
+# Based from: https://github.com/cloudflare/argo-tunnel-examples/tree/master/terraform-gcp-gke-ingress-controller
 
 resource "kubernetes_namespace" "cloudflared" {
   metadata {

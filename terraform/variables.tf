@@ -98,3 +98,10 @@ variable "cloudflare_token" {
   type        = string
 }
 
+##########################################
+# Other variables
+##########################################
+variable "coinmarketcap_api_key" {
+  type      = string
+  sensitive = true
+}

@@ -63,10 +63,9 @@ module "cloudflared" {
   cloudflare_tunnel_name = var.cloudflare_tunnel_name
   cloudflare_dns_zone    = var.cloudflare_dns_zone
   depends_on             = [module.proxmox-nodes]
-
 }
 
-# Call the module to setup ArgoCD
+# Deploy ArgoCD
 module "argocd" {
   source                 = "./argocd"
   cloudflare_dns_zone    = var.cloudflare_dns_zone
@@ -74,4 +73,33 @@ module "argocd" {
   depends_on             = [module.cloudflared]
 }
 
+# Deploy uptime kuma
+module "uptimekuma" {
+  source             = "./uptimekuma"
+  externaldns_target = module.cloudflared.cloudflare_tunnel_dns
+  hostname           = "uptime.${var.cloudflare_dns_zone}"
+}
 
+# Deploy traefik dashboard
+module "traefik-dashboard" {
+  source             = "./traefik-dashboard"
+  externaldns_target = module.cloudflared.cloudflare_tunnel_dns
+  hostname           = "traefik.${var.cloudflare_dns_zone}"
+}
+
+# Deploy homepage
+module "homepage" {
+  source                = "./benphelps_homepage"
+  externaldns_target    = module.cloudflared.cloudflare_tunnel_dns
+  hostname              = "lab.${var.cloudflare_dns_zone}"
+  coinmarketcap_api_key = var.coinmarketcap_api_key
+  cloudflare_account_id = var.cloudflare_account_id
+  cloudflare_token      = var.cloudflare_token
+  cloudflare_tunnel_id  = module.cloudflared.cloudflare_tunnel_id
+}
+# Deploy authentik
+module "authentik" {
+  source             = "./authentik-idm"
+  externaldns_target = module.cloudflared.cloudflare_tunnel_dns
+  hostname           = "auth.${var.cloudflare_dns_zone}"
+}

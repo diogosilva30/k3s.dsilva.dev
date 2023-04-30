@@ -18,6 +18,7 @@ variable "cloudflare_email" {
 variable "cloudflare_token" {
   description = "Cloudflare API token created at https://dash.cloudflare.com/profile/api-tokens"
   type        = string
+  sensitive   = true
 }
 
 variable "cloudflare_tunnel_name" {
@@ -29,7 +30,3 @@ variable "cloudflare_dns_zone" {
   type        = string
 }
 
-# variable "kubeconfig_file_path" {
-#   type        = string
-#   description = "The path for the KUBECONFIG"
-# }

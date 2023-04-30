@@ -27,20 +27,15 @@ controller:
 # Enable the ingress to expose Homepage to the network.
 ingress:
   main:
-    enabled: true
+    enabled: yes
     labels:
       # This label will enable discover of this deployment in Homepage
       gethomepage.dev/enabled: "true"
     annotations:
-      # These annotations will configure how this deployment is shown in Homepage
-      gethomepage.dev/name: "Homepage"
-      gethomepage.dev/description: "A modern, secure, highly customizable application dashboard."
-      gethomepage.dev/group: "A New Group"
-      gethomepage.dev/icon: "homepage.png"
-      external-dns.alpha.kubernetes.io/target: "k3s.dsilva.dev"
+      external-dns.alpha.kubernetes.io/target: ${externaldns_target}
     ingressClassName: "traefik"
     hosts:
-      - host: &host "lab.dsilva.dev"
+      - host: &host "${hostname}"
         paths:
           - path: /
             pathType: Prefix
@@ -53,23 +48,37 @@ config:
   title: Diogo's Silva Lab
 
   services:
-    - Finance:
-        - CoinMarketCap:
-            icon: bitcoin
-            href: https://coinmarketcap.com/portfolio-tracker/
-            description: Crypto portfolio tracker
-            # widget:
-            #   type: coinmarketcap
-            #   currency: EUR # Optional
-            #   symbols: [BTC, AVAX, ADA, NEXO]
-            #   key: {{HOMEPAGE_VAR_COINMARKETCAP_API}}
-              
-    - Home: 
-        - HomeAssistant:
-            icon: homeassistant
+    - Quick Access: 
+        - Home Assistant:
+            icon: https://upload.wikimedia.org/wikipedia/commons/6/6e/Home_Assistant_Logo.svg
             href: https://home.dsilva.dev
             description: Home assistant instance
-  
+        - Cloudflared:
+            icon: cloudflare
+            href: https://dash.cloudflare.com/
+            description: Cloudflare DNS and kubernetes tunnel configuration
+            widget:
+                type: cloudflared
+                accountid: ${cloudflare_account_id} 
+                tunnelid: ${cloudflare_tunnel_id}
+                key: ${cloudflare_token}
+              
+    - Finance:
+        - Coin Market Cap:
+            icon: https://seeklogo.com/images/C/coinmarketcap-logo-064D167A0E-seeklogo.com.png
+            href: https://coinmarketcap.com/portfolio-tracker/
+            description: Cryptocurrency Tracker
+            widget:
+              type: coinmarketcap
+              currency: USD
+              symbols: [BTC, AVAX, ETH, ADA, NEXO]
+              key: ${coinmarketcap_api_key}
+        - Degiro:
+            icon: mdi-chart-areaspline
+            description: Stock portfolio
+            href: https://trader.degiro.nl/  
+
+    
   
   # To use an existing ConfigMap uncomment this line and specify the name
   bookmarks:
