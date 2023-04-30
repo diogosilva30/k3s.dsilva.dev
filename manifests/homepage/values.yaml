@@ -36,9 +36,10 @@ ingress:
       gethomepage.dev/description: "A modern, secure, highly customizable application dashboard."
       gethomepage.dev/group: "A New Group"
       gethomepage.dev/icon: "homepage.png"
+      external-dns.alpha.kubernetes.io/target: "k3s.dsilva.dev"
     ingressClassName: "traefik"
     hosts:
-      - host: &host "k3s.dsilva.dev"
+      - host: &host "page.dsilva.dev"
         paths:
           - path: /
             pathType: Prefix
