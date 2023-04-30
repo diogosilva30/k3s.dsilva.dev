@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 0.13.0"
   backend "s3" {
     bucket                      = "terraform-states"
-    key                         = "services-dsilva-dev.tfstate"
+    key                         = "k3s-dsilva-dev.tfstate"
     endpoint                    = "https://s3-api.dsilva.dev"
     force_path_style            = true
     region                      = "eu-south-2"
@@ -11,127 +11,67 @@ terraform {
     skip_metadata_api_check     = true
   }
   required_providers {
-    # https://github.com/Telmate/terraform-provider-proxmox
-    proxmox = {
-      source  = "telmate/proxmox"
-      version = "2.9.3"
-    }
     cloudflare = {
       source = "cloudflare/cloudflare"
     }
   }
 }
 
-provider "proxmox" {
-  pm_api_url          = var.proxmox_api_url
-  pm_api_token_id     = var.proxmox_api_token_id
-  pm_api_token_secret = var.proxmox_api_token_secret
-  pm_tls_insecure     = true
-  pm_log_enable       = true
-  pm_log_file         = "terraform-plugin-proxmox.log"
-  pm_debug            = true
-  pm_log_levels = {
-    _default    = "debug"
-    _capturelog = ""
-  }
+# Configure cloudflare access
+provider "cloudflare" {
+  api_token = var.cloudflare_token
 }
 
 
-resource "proxmox_vm_qemu" "k3s-server-nodes" {
 
-  count       = 1
-  name        = "${var.cluster_name}-k3s-server-node-${count.index + 1}"
-  desc        = "Kubernetes server node ${count.index + 1} for ${var.cluster_name}"
-  target_node = "proxmox"
+# Call the module to setup the proxmox nodes
+# and start the kubernetes cluster
+module "proxmox-nodes" {
+  source                   = "./proxmox"
+  proxmox_api_token_id     = var.proxmox_api_token_id
+  proxmox_api_token_secret = var.proxmox_api_token_secret
+  proxmox_api_url          = var.proxmox_api_url
+  server_node_count        = var.server_node_count
+  cluster_name             = var.cluster_name
+  k3s_version              = var.k3s_version
+  disk_size                = var.disk_size
+  memory                   = var.memory
+  cores                    = var.cores
+  ciuser                   = var.ciuser
+  ssh_keys                 = var.ssh_keys
+  ssh_private_key          = var.ssh_private_key
+}
 
-  # Hardware configuration
-  agent   = 1
-  clone   = "ubuntu-server-22"
-  cores   = var.cores
-  memory  = var.memory
-  sockets = 1
-  cpu     = "host"
-  disk {
-    storage = "local"
-    type    = "virtio"
-    size    = var.disk_size
+# Configure both kubernetes and helm with kubeconfig path
+provider "helm" {
+  kubernetes {
+    config_path = "./kubeconfig"
   }
+}
+provider "kubernetes" {
+  config_path = "./kubeconfig"
+}
 
-  os_type         = "cloud-init"
-  ipconfig0       = "ip=dhcp" # auto-assign a IP address for the machine
-  nameserver      = "8.8.8.8"
-  ciuser          = var.ciuser
-  sshkeys         = var.ssh_keys
-  ssh_user        = var.ciuser
-  ssh_private_key = var.ssh_private_key
-
-  # Specify connection variables for remote execution
-  connection {
-    type        = "ssh"
-    host        = self.ssh_host # Auto-assigned ip address
-    user        = self.ssh_user
-    private_key = self.ssh_private_key
-    port        = self.ssh_port
-  }
-
-  # Start the cluster
-  provisioner "local-exec" {
-    command = <<-EOT
-      echo "${self.ssh_private_key}" > privkey
-      chmod 600 privkey
-      k3sup install --ip ${self.ssh_host} --user ${self.ssh_user} --ssh-key privkey --k3s-version ${var.k3s_version}
-      EOT
-  }
+# Call the module to setup a cloudflare tunnel,
+# and external DNS
+module "cloudflared" {
+  source                 = "./cloudflared"
+  cloudflare_zone_id     = var.cloudflare_zone_id
+  cloudflare_account_id  = var.cloudflare_account_id
+  cloudflare_email       = var.cloudflare_email
+  cloudflare_token       = var.cloudflare_token
+  cloudflare_tunnel_name = var.cloudflare_tunnel_name
+  cloudflare_dns_zone = var.cloudflare_dns_zone
+  depends_on          = [module.proxmox-nodes]
 
 }
 
-
-resource "proxmox_vm_qemu" "k3s-worker-nodes" {
-
-  count       = var.worker_node_count
-  name        = "${var.cluster_name}-k3s-worker-${count.index + 1}"
-  desc        = "Kubernetes worker node ${count.index + 1} for ${var.cluster_name}"
-  target_node = "proxmox"
-
-  # Hardware configuration
-  agent   = 1
-  clone   = "ubuntu-server-22"
-  cores   = var.cores
-  memory  = var.memory
-  sockets = 1
-  cpu     = "host"
-  disk {
-    storage = "local"
-    type    = "virtio"
-    size    = var.disk_size
-  }
-
-  os_type         = "cloud-init"
-  ipconfig0       = "ip=dhcp" # auto-assign a IP address for the machine
-  nameserver      = "8.8.8.8"
-  ciuser          = var.ciuser
-  sshkeys         = var.ssh_keys
-  ssh_user        = var.ciuser
-  ssh_private_key = var.ssh_private_key
-
-  # Specify connection variables for remote execution
-  connection {
-    type        = "ssh"
-    host        = self.ssh_host # Auto-assigned ip address
-    user        = self.ssh_user
-    private_key = self.ssh_private_key
-    port        = self.ssh_port
-  }
-
-  # Join the cluster with k3sup
-  provisioner "local-exec" {
-    command = <<-EOT
-      echo "${self.ssh_private_key}" > privkey
-      chmod 600 privkey
-      k3sup join --ip ${self.ssh_host} --server-ip=${proxmox_vm_qemu.k3s-server-nodes[0].ssh_host} --ssh-key privkey --user ${self.ssh_user} --k3s-version ${var.k3s_version}
-    EOT
-
-  }
-
+# Call the module to setup ArgoCD
+module "argocd" {
+  source                 = "./argocd"
+  cloudflare_dns_zone    = var.cloudflare_dns_zone
+  cloudflare_tunnel_name = var.cloudflare_tunnel_name
+  depends_on             = [module.cloudflared]
 }
+
 

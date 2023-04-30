@@ -1,0 +1,146 @@
+name: "Deploy"
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+jobs:
+  # Generate a tailscale vpn auth key with oauth2 client
+  generate-tailscale-authkey:
+    runs-on: ubuntu-latest
+    env:
+      CLIENT_ID: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+      CLIENT_SECRET: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
+    steps:
+      - name: Generate Tailscale Auth Key
+        id: generate-key
+        run: |
+          # Generate access token with Oauth2 client
+          ACCESS_TOKEN=$(curl -s -d "client_id=${CLIENT_ID}" -d "client_secret=${CLIENT_SECRET}" "https://api.tailscale.com/api/v2/oauth/token" | jq -r '.access_token')
+          # Then create a one-off auth key via API with the access token we previously created
+          AUTH_KEY=$(curl -s --location 'https://api.tailscale.com/api/v2/tailnet/-/keys' \
+            --header "Authorization: Bearer ${ACCESS_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data '{
+              "capabilities": {
+                "devices": {
+                  "create": {
+                    "ephemeral": true,
+                    "tags": ["tag:cicd"]
+                  }
+                }
+              },
+              "expirySeconds": 120}' \
+              | jq -r ".key")
+
+          # Save the auth key as step output
+          echo "AUTH_KEY=$AUTH_KEY" >> $GITHUB_OUTPUT
+    outputs:
+      # Export step output as job output
+      AUTH_KEY: ${{ steps.generate-key.outputs.AUTH_KEY }}
+
+  # Deploy infrastructure
+  deploy:
+    name: "Deploy with Terraform"
+    needs: generate-tailscale-authkey
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    env:
+      # Get auth key from previous job
+      TAILSCALE_AUTH_KEY: ${{ needs.generate-tailscale-authkey.outputs.AUTH_KEY }}
+      TAILSCALE_UPGRADE: "1"
+      # Configuration for S3 backend (automatically read by Terraform)
+      AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+    steps:
+      # Connect to private network with tailscale
+      - name: Install tailscale
+        run: curl -fsSL https://tailscale.com/install.sh | sh
+      - name: Start Tailscale
+        run: sudo tailscale up --auth-key $TAILSCALE_AUTH_KEY --accept-routes
+      - name: Tailscale status
+        run: tailscale status
+        # Checkout repository code
+      - name: Checkout
+        uses: actions/checkout@v3
+        # Install terraform
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform -chdir=terraform fmt -check
+
+      - name: Terraform Init
+        id: init
+        run: terraform -chdir=terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform -chdir=terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name == 'pull_request'
+        run: terraform -chdir=terraform plan -no-color -input=false
+        continue-on-error: true
+
+      - name: Update Pull Request
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      # If terraform previously failed abort pipeline
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      # Deploy with terraform on pushes to main branch
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        id: terraform-apply # needed to get output value in next step
+        run: make apply
+        env:
+          TF_VAR_proxmox_api_url: ${{ secrets.PROXMOX_API_URL }}
+          TF_VAR_proxmox_api_token_id: ${{ secrets.PROXMOX_API_TOKEN_ID }}
+          TF_VAR_proxmox_api_token_secret: ${{ secrets.PROXMOX_API_TOKEN_SECRET }}
+          TF_VAR_ciuser: ${{ secrets.CI_USER }}
+          TF_VAR_ssh_keys: ${{ secrets.SSH_KEY }}
+          TF_VAR_ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Cloudflare variables
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_VAR_cloudflare_email: ${{ secrets.CLOUDFLARE_EMAIL }}
+          TF_VAR_cloudflare_token: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TF_VAR_cloudflare_dns_zone: "dsilva.dev"
+          TF_VAR_cloudflare_tunnel_name: "k3s"
