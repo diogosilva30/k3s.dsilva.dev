@@ -65,6 +65,11 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "traefik"
     external-dns.alpha.kubernetes.io/target: "k3s.dsilva.dev"
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Downtime monitoring service
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: uptime-kuma.png
+    gethomepage.dev/name: Up Time Kuma
 spec:
   rules:
     - host: uptime.dsilva.dev
