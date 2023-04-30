@@ -1,3 +1,4 @@
+# Default values: https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
 image:
   repository: ghcr.io/benphelps/homepage
   tag: v0.6.16
@@ -39,7 +40,7 @@ ingress:
       external-dns.alpha.kubernetes.io/target: "k3s.dsilva.dev"
     ingressClassName: "traefik"
     hosts:
-      - host: &host "page.dsilva.dev"
+      - host: &host "lab.dsilva.dev"
         paths:
           - path: /
             pathType: Prefix
@@ -49,6 +50,7 @@ ingress:
 
 # All the config files for Homepage can be specified under their relevant config block.
 config:
+  services:
   
   # To use an existing ConfigMap uncomment this line and specify the name
   bookmarks:
@@ -97,7 +99,7 @@ config:
     - resources:
         # change backend to 'kubernetes' to use Kubernetes integration. Requires RBAC.
         backend: resources
-        expanded: true
+        expanded: false
         cpu: true
         memory: true
     - search:
