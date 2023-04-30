@@ -60,24 +60,20 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: kuma
+  name: uptime-kuma
   namespace: kuma
   annotations:
-    kubernetes.io/ingress.class: "traefik"    
+    kubernetes.io/ingress.class: "traefik"
     external-dns.alpha.kubernetes.io/target: "k3s.dsilva.dev"
 spec:
-  tls:
-  - hosts:
-    - uptime.dsilva.dev
-    secretName: uptime.dsilva.dev
   rules:
-  - host: uptime.dsilva.dev
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: uptime-kuma-svc
-            port:
-              number: 3001
+    - host: uptime.dsilva.dev
+      http:
+        paths:
+          - backend:
+              service:
+                name: uptime-kuma-svc
+                port:
+                  number: 3001
+            path: /
+            pathType: Prefix
