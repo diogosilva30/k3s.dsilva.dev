@@ -61,8 +61,8 @@ module "cloudflared" {
   cloudflare_email       = var.cloudflare_email
   cloudflare_token       = var.cloudflare_token
   cloudflare_tunnel_name = var.cloudflare_tunnel_name
-  cloudflare_dns_zone = var.cloudflare_dns_zone
-  depends_on          = [module.proxmox-nodes]
+  cloudflare_dns_zone    = var.cloudflare_dns_zone
+  depends_on             = [module.proxmox-nodes]
 
 }
 
