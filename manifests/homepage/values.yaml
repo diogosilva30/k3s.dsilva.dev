@@ -49,13 +49,7 @@ ingress:
 
 # All the config files for Homepage can be specified under their relevant config block.
 config:
-  # Widget for weather
-  openmeteo:
-    label: Weather # optional
-    timezone: Europe/Lisbon # optional
-    units: metric # or imperial
-    cache: 5 # Time in minutes to cache API responses, to stay within limits
-
+  
   # To use an existing ConfigMap uncomment this line and specify the name
   bookmarks:
     - Git:
@@ -67,6 +61,9 @@ config:
               href: https://gitlab.ubiwhere.com/desilva
   
     - Developer Tools:
+        - Homepage Documentation:
+            - abbr: HD
+              href: https://gethomepage.dev/
         - Self Hosted:
             - abbr: SH
               href: https://github.com/awesome-selfhosted/awesome-selfhosted
@@ -91,6 +88,17 @@ config:
             href: http://localhost/
             description: Homepage is 😎
   widgets:
+    - greeting:
+        text_size: xl
+        text: Welcome Diogo Silva!
+
+    # Widget for weather
+    - openmeteo:
+        label: Weather # optional
+        timezone: Europe/Lisbon # optional
+        units: metric # or imperial
+        cache: 5 # Time in minutes to cache API responses, to stay within limits
+
     - resources:
         # change backend to 'kubernetes' to use Kubernetes integration. Requires RBAC.
         backend: resources
