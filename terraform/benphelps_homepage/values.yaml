@@ -49,10 +49,14 @@ config:
 
   services:
     - Quick Access: 
-        - Home Assistant:
-            icon: https://upload.wikimedia.org/wikipedia/commons/6/6e/Home_Assistant_Logo.svg
-            href: https://home.dsilva.dev
-            description: Home assistant instance
+        - Chat GPT:
+            icon: chatgpt
+            href: https://chat.openai.com/
+            description: Your favorite senior developer
+        - Tailscale:
+            icon: https://avatars.githubusercontent.com/u/48932923?s=200&v=4
+            href: https://login.tailscale.com/admin/machines
+            description: Tailscale VPN
         - Cloudflared:
             icon: cloudflare
             href: https://dash.cloudflare.com/
@@ -62,6 +66,10 @@ config:
                 accountid: ${cloudflare_account_id} 
                 tunnelid: ${cloudflare_tunnel_id}
                 key: ${cloudflare_token}
+        - Home Assistant:
+            icon: https://upload.wikimedia.org/wikipedia/commons/6/6e/Home_Assistant_Logo.svg
+            href: https://home.dsilva.dev
+            description: Home assistant instance
               
     - Finance:
         - Coin Market Cap:
@@ -83,6 +91,9 @@ config:
   # To use an existing ConfigMap uncomment this line and specify the name
   bookmarks:
     - Git:
+        - This Repository:
+            - icon: github-light
+              href: https://github.com/diogosilva30/k3s.dsilva.dev
         - Github:
             - icon: github-light
               href: https://github.com/diogosilva30
@@ -124,6 +135,8 @@ config:
         label: Weather # optional
         timezone: Europe/Lisbon # optional
         units: metric # or imperial
+        latitude: 41.1905758
+        longitude: -8.3863183
         cache: 5 # Time in minutes to cache API responses, to stay within limits
 
     - resources:

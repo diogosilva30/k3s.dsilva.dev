@@ -57,3 +57,34 @@ resource "kubernetes_secret" "authentik_secret_key" {
 
   type = "kubernetes.io/secret"
 }
+
+# Create the traefik middleware for forward auth
+# against authentik
+# https://goauthentik.io/docs/providers/proxy/server_traefik
+resource "kubectl_manifest" "traefik-middleware" {
+  yaml_body = <<YAML
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+    name: authentik
+    namespace: ${helm_release.authentik.namespace}
+spec:
+    forwardAuth:
+        address: https:/${var.hostname}/outpost.goauthentik.io/auth/traefik
+        trustForwardHeader: true
+        authResponseHeaders:
+            - X-authentik-username
+            - X-authentik-groups
+            - X-authentik-email
+            - X-authentik-name
+            - X-authentik-uid
+            - X-authentik-jwt
+            - X-authentik-meta-jwks
+            - X-authentik-meta-outpost
+            - X-authentik-meta-provider
+            - X-authentik-meta-app
+            - X-authentik-meta-version
+  YAML
+}
+
+

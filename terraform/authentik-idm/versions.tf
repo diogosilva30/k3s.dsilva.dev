@@ -6,5 +6,8 @@ terraform {
     helm = {
       source = "hashicorp/helm"
     }
+    kubectl = {
+      source = "gavinbunney/kubectl"
+    }
   }
 }
