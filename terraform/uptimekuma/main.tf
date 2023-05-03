@@ -1,10 +1,16 @@
-resource "kubectl_manifest" "uptimekuma" {
+resource "kubectl_manifest" "uptimekuma-namespace" {
   yaml_body = <<YAML
 kind: Namespace
 apiVersion: v1
 metadata:
   name: ${var.namespace}
----
+
+  YAML
+}
+
+
+resource "kubectl_manifest" "uptimekuma-service" {
+  yaml_body = <<YAML
 apiVersion: v1
 kind: Service
 metadata:
@@ -14,9 +20,13 @@ spec:
   selector:
     app: uptime-kuma
   ports:
-  - name: uptime-kuma
+  - name: ${var.service_name}
     port: 3001
----
+  YAML
+}
+
+resource "kubectl_manifest" "uptimekuma-statefulset" {
+  yaml_body = <<YAML
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -58,7 +68,11 @@ spec:
         resources:
           requests:
             storage: 1Gi
----
+  YAML
+}
+
+resource "kubectl_manifest" "uptimekuma-ingress" {
+  yaml_body = <<YAML
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -67,6 +81,8 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "traefik"
     external-dns.alpha.kubernetes.io/target: "${var.externaldns_target}"
+    # Protect service with SSO
+    traefik.ingress.kubernetes.io/router.middlewares: ${var.traefik_auth_middleware}
     gethomepage.dev/enabled: "true"
     gethomepage.dev/description: Downtime monitoring service
     gethomepage.dev/group: Monitoring
@@ -84,7 +100,5 @@ spec:
                   number: 3001
             path: /
             pathType: Prefix
-
   YAML
 }
-

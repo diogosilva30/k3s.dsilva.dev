@@ -33,6 +33,9 @@ ingress:
       gethomepage.dev/enabled: "true"
     annotations:
       external-dns.alpha.kubernetes.io/target: ${externaldns_target}
+      # Protect service with SSO
+      traefik.ingress.kubernetes.io/router.middlewares: ${traefik_auth_middleware}
+
     ingressClassName: "traefik"
     hosts:
       - host: &host "${hostname}"
@@ -48,6 +51,12 @@ config:
   title: Diogo's Silva Lab
 
   services:
+    - Monitoring:
+        - Proxmox:
+            icon: proxmox
+            href: https://192.168.1.200:8006/
+            description: Infrastructure virtualization
+
     - Quick Access: 
         - Chat GPT:
             icon: chatgpt

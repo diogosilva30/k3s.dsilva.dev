@@ -8,3 +8,7 @@ variable "namespace" {
   type    = string
   default = "authentik"
 }
+variable "authentik_middleware_name" {
+  type    = string
+  default = "authentik"
+}

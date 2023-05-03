@@ -23,3 +23,6 @@ variable "cloudflare_token" {
   type      = string
   sensitive = true
 }
+variable "traefik_auth_middleware" {
+  type = string
+}

@@ -8,12 +8,13 @@ resource "helm_release" "benphelps_homepage" {
   values = [
     templatefile("${path.module}/values.yaml",
       {
-        coinmarketcap_api_key = var.coinmarketcap_api_key,
-        hostname              = var.hostname,
-        externaldns_target    = var.externaldns_target,
-        cloudflare_account_id = var.cloudflare_account_id,
-        cloudflare_token      = var.cloudflare_token,
-        cloudflare_tunnel_id  = var.cloudflare_tunnel_id,
+        coinmarketcap_api_key   = var.coinmarketcap_api_key,
+        hostname                = var.hostname,
+        externaldns_target      = var.externaldns_target,
+        cloudflare_account_id   = var.cloudflare_account_id,
+        cloudflare_token        = var.cloudflare_token,
+        cloudflare_tunnel_id    = var.cloudflare_tunnel_id,
+        traefik_auth_middleware = var.traefik_auth_middleware,
       }
     )
   ]

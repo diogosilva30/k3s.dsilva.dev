@@ -11,5 +11,7 @@ variable "namespace" {
 variable "service_name" {
   type    = string
   default = "uptime-kuma-svc"
-
+}
+variable "traefik_auth_middleware" {
+  type = string
 }

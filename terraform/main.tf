@@ -64,6 +64,20 @@ module "cloudflared" {
   depends_on             = [module.proxmox-nodes]
 }
 
+# Deploy traefik custom configs and dashboard
+module "traefik" {
+  source             = "./traefik"
+  externaldns_target = module.cloudflared.cloudflare_tunnel_dns
+  hostname           = "traefik.${var.cloudflare_dns_zone}"
+}
+
+# Deploy authentik for SSO (Single Sign-On)
+module "authentik" {
+  source             = "./authentik-idm"
+  externaldns_target = module.cloudflared.cloudflare_tunnel_dns
+  hostname           = "sso.${var.cloudflare_dns_zone}"
+}
+
 # Deploy ArgoCD
 module "argocd" {
   source                 = "./argocd"
@@ -74,31 +88,22 @@ module "argocd" {
 
 # Deploy uptime kuma
 module "uptimekuma" {
-  source             = "./uptimekuma"
-  externaldns_target = module.cloudflared.cloudflare_tunnel_dns
-  hostname           = "uptime.${var.cloudflare_dns_zone}"
+  source                  = "./uptimekuma"
+  externaldns_target      = module.cloudflared.cloudflare_tunnel_dns
+  hostname                = "uptime.${var.cloudflare_dns_zone}"
+  traefik_auth_middleware = module.authentik.traefik_auth_middleware
 }
 
-# Deploy traefik dashboard
-module "traefik-dashboard" {
-  source             = "./traefik-dashboard"
-  externaldns_target = module.cloudflared.cloudflare_tunnel_dns
-  hostname           = "traefik.${var.cloudflare_dns_zone}"
-}
+
 
 # Deploy homepage
 module "homepage" {
-  source                = "./benphelps_homepage"
-  externaldns_target    = module.cloudflared.cloudflare_tunnel_dns
-  hostname              = "lab.${var.cloudflare_dns_zone}"
-  coinmarketcap_api_key = var.coinmarketcap_api_key
-  cloudflare_account_id = var.cloudflare_account_id
-  cloudflare_token      = var.cloudflare_token
-  cloudflare_tunnel_id  = module.cloudflared.cloudflare_tunnel_id
-}
-# Deploy authentik
-module "authentik" {
-  source             = "./authentik-idm"
-  externaldns_target = module.cloudflared.cloudflare_tunnel_dns
-  hostname           = "auth.${var.cloudflare_dns_zone}"
+  source                  = "./benphelps_homepage"
+  externaldns_target      = module.cloudflared.cloudflare_tunnel_dns
+  hostname                = "lab.${var.cloudflare_dns_zone}"
+  coinmarketcap_api_key   = var.coinmarketcap_api_key
+  cloudflare_account_id   = var.cloudflare_account_id
+  cloudflare_token        = var.cloudflare_token
+  cloudflare_tunnel_id    = module.cloudflared.cloudflare_tunnel_id
+  traefik_auth_middleware = module.authentik.traefik_auth_middleware
 }

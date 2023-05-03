@@ -1,6 +1,27 @@
+# https://medium.com/@_jonas/traefik-kubernetes-ingress-and-x-forwarded-headers-82194d319b0e
+# We need to enable X-Forwarded-* headers, otherwise authentik fails with CSRF 500 error:
+# https://github.com/goauthentik/authentik/issues/4209#issuecomment-1359533153
+resource "kubectl_manifest" "traefik-config-override" {
+  yaml_body = <<YAML
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    additionalArguments:
+      - "--entryPoints.web.forwardedHeaders.insecure"
+    providers:
+      kubernetesCRD:
+        allowCrossNamespace: true
+  YAML
+}
+
+
+
 resource "kubectl_manifest" "traefik-dashboard" {
   yaml_body = <<YAML
-
 apiVersion: v1
 kind: Service
 metadata:
