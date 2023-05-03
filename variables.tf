@@ -19,7 +19,7 @@ variable "worker_node_count" {
 }
 variable "server_node_count" {
   description = "The number of server nodes in the kubernetes cluster (odd number required)."
-  default     = 3
+  default     = 4
 }
 variable "k3s_version" {
   description = "The version of k3s"

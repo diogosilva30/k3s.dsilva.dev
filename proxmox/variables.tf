@@ -14,7 +14,7 @@ variable "proxmox_api_url" {
 
 variable "server_node_count" {
   description = "The number of server nodes in the kubernetes cluster (odd number required)."
-  default     = 3
+  default     = 4
 }
 variable "k3s_version" {
   description = "The version of k3s"
@@ -29,6 +29,14 @@ variable "disk_size" {
 variable "memory" {
   description = "The ammount of memory. E.g. '2048'"
   type        = number
+}
+variable "balloon" {
+  description = <<EOF
+  The minimum amount of memory to allocate to the VM in Megabytes, when
+  Automatic Memory Allocation is desired. Proxmox will enable a balloon device on the guest to manage
+  EOF
+  type        = number
+  default     = 1024
 }
 variable "cores" {
   description = "The number of CPU cores of the VM"

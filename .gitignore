@@ -283,3 +283,5 @@ terraform/privkey
 terraform/kubeconfig
 terraform/initial_state.txt
 terraform/k3s_node_state.txt
+kubeconfig
+privkey

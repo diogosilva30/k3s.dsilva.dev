@@ -79,12 +79,14 @@ module "authentik" {
 }
 
 # Deploy ArgoCD
-module "argocd" {
-  source                 = "./argocd"
-  cloudflare_dns_zone    = var.cloudflare_dns_zone
-  cloudflare_tunnel_name = var.cloudflare_tunnel_name
-  depends_on             = [module.cloudflared]
-}
+# Currently comment out as not needed. Lefted for future
+# reference
+# module "argocd" {
+#   source                 = "./argocd"
+#   cloudflare_dns_zone    = var.cloudflare_dns_zone
+#   cloudflare_tunnel_name = var.cloudflare_tunnel_name
+#   depends_on             = [module.cloudflared]
+# }
 
 # Deploy uptime kuma
 module "uptimekuma" {

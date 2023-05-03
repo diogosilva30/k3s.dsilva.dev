@@ -9,6 +9,7 @@ resource "proxmox_vm_qemu" "k3s-server-nodes" {
   clone   = "ubuntu-server-jammy"
   cores   = var.cores
   memory  = var.memory
+  balloon = 1024
   sockets = 1
   cpu     = "host"
   disk {

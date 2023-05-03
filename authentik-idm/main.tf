@@ -70,12 +70,12 @@ resource "kubernetes_secret" "authentik_secret_key" {
 # We match any subdomain on the current domain with path
 # "/outpost.goauthentik.io/" and forward it to authentik output
 # service
-resource "kubectl_manifest" "traefik-output-ingress" {
+resource "kubectl_manifest" "authentik-outpost-ingress" {
   yaml_body = <<YAML
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: output-ingress
+  name: authentik-outpost
   namespace: ${helm_release.authentik.namespace}
   annotations:
     kubernetes.io/ingress.class: traefik
