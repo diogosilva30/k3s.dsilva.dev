@@ -1,0 +1,75 @@
+# Default values for pihole.
+# https://github.com/MoJo2600/pihole-kubernetes/blob/master/charts/pihole/values.yaml
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+persistentVolumeClaim:
+    enabled: true
+
+ingress:
+  # -- Generate a Ingress resource
+  enabled: true
+
+  # -- Specify an ingressClassName
+  ingressClassName: traefik
+
+  # -- Annotations for the ingress
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "${externaldns_target}"
+    # Add our middlewares:
+    #   - Middleware to protect this service with SSO
+    #   - Middleware to redirect "/" to "/admin"
+    traefik.ingress.kubernetes.io/router.middlewares: |
+      ${traefik_auth_middleware},
+      ${pihole_admin_middleware}
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: DNS and adblocker
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: pi-hole.png
+    gethomepage.dev/name: Pi Hole
+  path: /
+  hosts:
+    # virtualHost (default value is pi.hole) will be appended to the hosts
+    - ${hostname}
+
+
+# Password does not matter as we will run pihole behind the traefik reverse
+# proxy with forward authentication middleware
+adminPassword:
+
+# -- Configuration for the DNS service on port 53
+serviceDns:
+
+  # -- deploys a mixed (TCP + UDP) Service instead of separate ones
+  mixedService: false
+
+  # Set type as "LoadBalancer" so k3s service lb exposes the service
+  # externally
+  type: LoadBalancer
+
+  # -- The port of the DNS service
+  port: 53
+
+
+# -- Configuration for the DHCP service on port 67
+serviceDhcp:
+
+  # -- Generate a Service resource for DHCP traffic
+  enabled: true
+
+  # Set type as "LoadBalancer" so k3s service lb exposes the service
+  # externally
+  type: LoadBalancer
+
+  # -- The port of the DHCP service
+  port: 67
+
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+

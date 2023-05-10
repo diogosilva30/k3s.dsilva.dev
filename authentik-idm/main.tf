@@ -33,6 +33,7 @@ resource "helm_release" "authentik" {
         # Pass the generated values for the `values.yaml`
         authentik_secret_key = random_id.authentik_secret_key.b64_std,
         postgres_password    = random_id.postgres_password.b64_std
+        authentik_api_key    = var.authentik_api_key
       }
     )
   ]
@@ -61,7 +62,7 @@ resource "kubernetes_secret" "authentik_secret_key" {
   }
 
   data = {
-    postgres-password = base64encode(random_id.authentik_secret_key.b64_std)
+    authentik-secret-key = base64encode(random_id.authentik_secret_key.b64_std)
   }
 
   type = "kubernetes.io/secret"
@@ -126,4 +127,18 @@ spec:
   YAML
 }
 
+resource "kubectl_manifest" "customization" {
+  yaml_body = <<YAML
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: authentik-custom-css
+    namespace: authentik
+data:
+    custom.css: |
+        ...
+        
+  YAML
+
+}
 

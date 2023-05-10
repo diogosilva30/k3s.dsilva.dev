@@ -1,3 +1,6 @@
+# Original values.yaml:
+# https://github.com/goauthentik/helm/blob/main/charts/authentik/values.yaml
+
 authentik:
     secret_key: ${authentik_secret_key}
     # This sends anonymous usage-data, stack traces on errors and
@@ -6,6 +9,32 @@ authentik:
         enabled: true
     postgresql:
         password: ${postgres_password}
+    theme:
+        background: >
+            background: url('https://picsum.photos/1920/1080');
+            filter: blur(8px);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+    settings:
+      theme:
+          background: >
+              background: url('https://picsum.photos/1920/1080');
+              filter: blur(8px);
+              background-position: center;
+              background-repeat: no-repeat;
+              background-size: cover;
+
+settings:
+    theme:
+        background: >
+            background: url('https://picsum.photos/1920/1080');
+            filter: blur(8px);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+
+
 
 ingress:
     enabled: yes
@@ -14,9 +43,14 @@ ingress:
       gethomepage.dev/enabled: "true"
       gethomepage.dev/name: "Authentication (Authentik)"
       gethomepage.dev/description: "Authentication and authorization management."
-      gethomepage.dev/group: "Quick Access"
+      gethomepage.dev/group: "Services"
       gethomepage.dev/icon: "authentik.png"
+      gethomepage.dev/widget.type: "authentik"
+      gethomepage.dev/widget.url: "https://${hostname}"
+      # Read an API key that we might have created after the initial deploy
+      gethomepage.dev/widget.key: ${authentik_api_key}
       external-dns.alpha.kubernetes.io/target: ${externaldns_target}
+
     ingressClassName: "traefik"
     hosts:
       - host: &host "${hostname}"

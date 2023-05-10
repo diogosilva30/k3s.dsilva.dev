@@ -101,3 +101,9 @@ variable "coinmarketcap_api_key" {
   type      = string
   sensitive = true
 }
+variable "authentik_api_key" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Authentik API key that we can after the first deploy for Homepage integration widget"
+}

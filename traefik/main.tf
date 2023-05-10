@@ -12,6 +12,7 @@ spec:
   valuesContent: |-
     additionalArguments:
       - "--entryPoints.web.forwardedHeaders.insecure"
+      - "--serversTransport.insecureSkipVerify=true"
     providers:
       kubernetesCRD:
         allowCrossNamespace: true

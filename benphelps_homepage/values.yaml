@@ -48,14 +48,37 @@ ingress:
 
 # All the config files for Homepage can be specified under their relevant config block.
 config:
-  title: Diogo's Silva Lab
+  settings:
+      title: Diogo's Silva Lab
+      headerStyle: boxed
+      layout:
+          Quick Access:
+              style: row
+              columns: 4
+          Monitoring:
+              style: row
+              columns: 4
 
   services:
     - Monitoring:
+        - Cloudflared:
+            icon: cloudflare
+            href: https://dash.cloudflare.com/
+            description: Cloudflare DNS and kubernetes tunnel configuration
+            widget:
+                type: cloudflared
+                accountid: ${cloudflare_account_id} 
+                tunnelid: ${cloudflare_tunnel_id}
+                key: ${cloudflare_token}
+                
         - Proxmox:
             icon: proxmox
             href: https://192.168.1.200:8006/
             description: Infrastructure virtualization
+        - Router Configuration:
+            icon: router
+            href: http://192.168.1.1/index.asp
+            description: Manage and configure router
 
     - Quick Access: 
         - Chat GPT:
@@ -66,15 +89,7 @@ config:
             icon: https://avatars.githubusercontent.com/u/48932923?s=200&v=4
             href: https://login.tailscale.com/admin/machines
             description: Tailscale VPN
-        - Cloudflared:
-            icon: cloudflare
-            href: https://dash.cloudflare.com/
-            description: Cloudflare DNS and kubernetes tunnel configuration
-            widget:
-                type: cloudflared
-                accountid: ${cloudflare_account_id} 
-                tunnelid: ${cloudflare_tunnel_id}
-                key: ${cloudflare_token}
+        
         - Home Assistant:
             icon: https://upload.wikimedia.org/wikipedia/commons/6/6e/Home_Assistant_Logo.svg
             href: https://home.dsilva.dev
@@ -130,10 +145,11 @@ config:
             - icon: youtube
               href: https://youtube.com/
         - Netflix:
-            - icon: reddit
+            - icon: netflix
               href: https://netflix.com/
 
-  
+
+
   widgets:
     - greeting:
         text_size: xl
@@ -174,7 +190,7 @@ config:
     # change mode to 'cluster' to use RBAC service account
     mode: cluster
   docker:
-  settings:
+    
 
 persistence:
   logs:

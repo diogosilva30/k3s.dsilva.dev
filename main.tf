@@ -14,6 +14,7 @@ terraform {
     cloudflare = {
       source = "cloudflare/cloudflare"
     }
+
   }
 }
 
@@ -76,6 +77,7 @@ module "authentik" {
   source             = "./authentik-idm"
   externaldns_target = module.cloudflared.cloudflare_tunnel_dns
   hostname           = "sso.${var.cloudflare_dns_zone}"
+  authentik_api_key  = var.authentik_api_key
 }
 
 # Deploy ArgoCD
@@ -96,8 +98,6 @@ module "uptimekuma" {
   traefik_auth_middleware = module.authentik.traefik_auth_middleware
 }
 
-
-
 # Deploy homepage
 module "homepage" {
   source                  = "./benphelps_homepage"
@@ -107,5 +107,41 @@ module "homepage" {
   cloudflare_account_id   = var.cloudflare_account_id
   cloudflare_token        = var.cloudflare_token
   cloudflare_tunnel_id    = module.cloudflared.cloudflare_tunnel_id
+  traefik_auth_middleware = module.authentik.traefik_auth_middleware
+}
+
+
+# Deploy pihole
+module "pihole" {
+  source                  = "./pi-hole"
+  externaldns_target      = module.cloudflared.cloudflare_tunnel_dns
+  hostname                = "pihole.${var.cloudflare_dns_zone}"
+  traefik_auth_middleware = module.authentik.traefik_auth_middleware
+}
+
+# # Deploy kubernetes dashboard
+# module "kubernetes_dashboard" {
+#   source                  = "./kubernetes_dashboard"
+#   hostname                = "kubernetes-dashboard.${var.cloudflare_dns_zone}"
+#   traefik_auth_middleware = module.authentik.traefik_auth_middleware
+#   externaldns_target      = module.cloudflared.cloudflare_tunnel_dns
+# }
+
+# Deploy monitoring stack (Prometheus + Grafana + Node exporter + Alert manager)
+# module "monitoring-stack" {
+#   source                  = "./monitoring-stack"
+#   externaldns_target      = module.cloudflared.cloudflare_tunnel_dns
+#   grafana_hostname        = "grafana.${var.cloudflare_dns_zone}"
+#   prometheus_hostname     = "prometheus.${var.cloudflare_dns_zone}"
+#   alert_manager_hostname  = "alert-manager.${var.cloudflare_dns_zone}"
+#   traefik_auth_middleware = module.authentik.traefik_auth_middleware
+#   servers_ips             = module.proxmox-nodes.server_ips
+# }
+
+# Deploy vaultwarden
+module "vaultwarden" {
+  source                  = "./vaultwarden-password-manager"
+  externaldns_target      = module.cloudflared.cloudflare_tunnel_dns
+  hostname                = "vaultwarden.${var.cloudflare_dns_zone}"
   traefik_auth_middleware = module.authentik.traefik_auth_middleware
 }
