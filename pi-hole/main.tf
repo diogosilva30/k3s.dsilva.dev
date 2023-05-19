@@ -16,7 +16,7 @@ resource "helm_release" "pihole" {
         externaldns_target      = var.externaldns_target,
         traefik_auth_middleware = var.traefik_auth_middleware,
         pihole_admin_middleware = "${var.namespace}-${var.pihole_admin_middleware_name}@kubernetescrd",
-        service_name            = var.service_name
+        namespace               = var.namespace
       }
     )
   ]

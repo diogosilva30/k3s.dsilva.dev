@@ -9,33 +9,7 @@ authentik:
         enabled: true
     postgresql:
         password: ${postgres_password}
-    theme:
-        background: >
-            background: url('https://picsum.photos/1920/1080');
-            filter: blur(8px);
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-    settings:
-      theme:
-          background: >
-              background: url('https://picsum.photos/1920/1080');
-              filter: blur(8px);
-              background-position: center;
-              background-repeat: no-repeat;
-              background-size: cover;
-
-settings:
-    theme:
-        background: >
-            background: url('https://picsum.photos/1920/1080');
-            filter: blur(8px);
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-
-
-
+  
 ingress:
     enabled: yes
     annotations:

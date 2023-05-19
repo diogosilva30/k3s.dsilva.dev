@@ -26,6 +26,8 @@ ingress:
     gethomepage.dev/group: Monitoring
     gethomepage.dev/icon: pi-hole.png
     gethomepage.dev/name: Pi Hole
+    gethomepage.dev/widget.type: "pihole"
+    gethomepage.dev/widget.url: "http://pihole-web.${namespace}.svc.cluster.local"
   path: /
   hosts:
     # virtualHost (default value is pi.hole) will be appended to the hosts

@@ -126,19 +126,3 @@ spec:
           - X-authentik-meta-version
   YAML
 }
-
-resource "kubectl_manifest" "customization" {
-  yaml_body = <<YAML
-apiVersion: v1
-kind: ConfigMap
-metadata:
-    name: authentik-custom-css
-    namespace: authentik
-data:
-    custom.css: |
-        ...
-        
-  YAML
-
-}
-
