@@ -1,0 +1,33 @@
+# values.yaml template file. Has variable placeholders that will be inject by terraform
+# Original values.yaml:
+# https://github.com/gissilabs/charts/blob/master/vaultwarden/values.yaml
+
+# Kubernetes Ingress
+ingress:
+  enabled: true
+  className: traefik
+  host: ${hostname}
+  annotations: 
+      external-dns.alpha.kubernetes.io/target: "${externaldns_target}"
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/href: "https://${hostname}"
+      gethomepage.dev/description: Password management
+      gethomepage.dev/group: Services
+      gethomepage.dev/icon: bitwarden.png
+      gethomepage.dev/name: Vaultwarden
+
+
+persistence:
+  enabled: true
+  size: 5Gi
+  accessMode: ReadWriteOnce
+  # Persistent Volume storage class
+  storageClass: "longhorn"
+
+
+replicaCount: 2
+
+# Enable the admin portal with the provided token
+admin:
+  enabled: true
+  existingSecret: ${secret_name}

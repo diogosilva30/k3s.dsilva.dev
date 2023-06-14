@@ -1,12 +1,11 @@
-
-##########################################
-# Variables required for "cloudflare" and
-# "argocd" module
-##########################################
-
+variable "kubeconfig" {
+  type        = string
+  description = "Kubeconfig file path"
+}
 variable "cloudflare_tunnel_name" {
   description = "The name of the Cloudflare tunnel"
   type        = string
+  default     = "k3s"
 }
 variable "cloudflare_dns_zone" {
   type        = string
@@ -34,10 +33,6 @@ variable "cloudflare_token" {
   description = "Cloudflare API token created at https://dash.cloudflare.com/profile/api-tokens"
   type        = string
 }
-
-##########################################
-# Other variables
-##########################################
 variable "coinmarketcap_api_key" {
   type      = string
   sensitive = true
@@ -46,5 +41,10 @@ variable "authentik_api_key" {
   type        = string
   sensitive   = true
   default     = ""
-  description = "Authentik API key that we can after the first deploy for Homepage integration widget"
+  description = "Authentik API key that we can add after the first deploy for Homepage integration widget"
+}
+variable "server_ips" {
+  type        = list(string)
+  sensitive   = true
+  description = "A list of kubernetes nodes ip's"
 }

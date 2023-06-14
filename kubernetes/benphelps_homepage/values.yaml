@@ -1,0 +1,202 @@
+# Default values: https://github.com/jameswynn/helm-charts/blob/main/charts/homepage/values.yaml
+image:
+  repository: ghcr.io/benphelps/homepage
+  tag: v0.6.16
+
+# Enable RBAC. RBAC is necessary to use Kubernetes integration
+enableRbac: true
+
+serviceAccount:
+  # Specify a different service account name
+  name: homepage
+  # Create service account. Needed when RBAC is enabled.
+  create: true
+
+service:
+  main:
+    ports:
+      http:
+        port: 3000
+
+controller:
+  strategy: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
+
+# Enable the ingress to expose Homepage to the network.
+ingress:
+  main:
+    enabled: yes
+    labels:
+      # This label will enable discover of this deployment in Homepage
+      gethomepage.dev/enabled: "true"
+    annotations:
+      external-dns.alpha.kubernetes.io/target: ${externaldns_target}
+      # Protect service with SSO
+      traefik.ingress.kubernetes.io/router.middlewares: ${traefik_auth_middleware}
+
+    ingressClassName: "traefik"
+    hosts:
+      - host: &host "${hostname}"
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - hosts:
+          - *host
+
+# All the config files for Homepage can be specified under their relevant config block.
+config:
+  settings:
+      title: Diogo's Silva Lab
+      headerStyle: boxed
+      layout:
+          Quick Access:
+              style: row
+              columns: 4
+          Monitoring:
+              style: row
+              columns: 4
+
+  services:
+    - Monitoring:
+        - Cloudflared:
+            icon: cloudflare
+            href: https://dash.cloudflare.com/
+            description: Cloudflare DNS and kubernetes tunnel configuration
+            widget:
+                type: cloudflared
+                accountid: ${cloudflare_account_id} 
+                tunnelid: ${cloudflare_tunnel_id}
+                key: ${cloudflare_token}
+                
+        - Proxmox:
+            icon: proxmox
+            href: https://192.168.1.200:8006/
+            description: Infrastructure virtualization
+        - Router Configuration:
+            icon: router
+            href: http://192.168.1.1/index.asp
+            description: Manage and configure router
+
+    - Quick Access: 
+        - Chat GPT:
+            icon: chatgpt
+            href: https://chat.openai.com/
+            description: Your favorite senior developer
+        - Tailscale:
+            icon: https://avatars.githubusercontent.com/u/48932923?s=200&v=4
+            href: https://login.tailscale.com/admin/machines
+            description: Tailscale VPN
+        
+        - Home Assistant:
+            icon: https://upload.wikimedia.org/wikipedia/commons/6/6e/Home_Assistant_Logo.svg
+            href: https://home.dsilva.dev
+            description: Home assistant instance
+              
+    - Finance:
+        - Coin Market Cap:
+            icon: https://seeklogo.com/images/C/coinmarketcap-logo-064D167A0E-seeklogo.com.png
+            href: https://coinmarketcap.com/portfolio-tracker/
+            description: Cryptocurrency Tracker
+            widget:
+              type: coinmarketcap
+              currency: USD
+              symbols: [BTC, AVAX, ETH, ADA, NEXO]
+              key: ${coinmarketcap_api_key}
+        - Degiro:
+            icon: mdi-chart-areaspline
+            description: Stock portfolio
+            href: https://trader.degiro.nl/  
+
+    
+  
+  # To use an existing ConfigMap uncomment this line and specify the name
+  bookmarks:
+    - Git:
+        - This Repository:
+            - icon: github-light
+              href: https://github.com/diogosilva30/k3s.dsilva.dev
+        - Github:
+            - icon: github-light
+              href: https://github.com/diogosilva30
+        - GitLab:
+            - icon: gitlab
+              href: https://gitlab.ubiwhere.com/desilva
+  
+    - Developer Tools:
+        - Homepage Documentation:
+            - icon: mdi-bookshelf
+              href: https://gethomepage.dev/
+        - Self Hosted:
+            - abbr: SH
+              href: https://github.com/awesome-selfhosted/awesome-selfhosted
+        - Dashboard Icons:
+            - icon: mdi-simple-icons
+              href: https://github.com/walkxcode/dashboard-icons/tree/main/png
+    - Social:
+        - LinkedIn:
+            - icon: linkedin
+              href: https://www.linkedin.com/in/diogosilva30/
+
+    - Entertainment:
+        - YouTube:
+            - icon: youtube
+              href: https://youtube.com/
+        - Netflix:
+            - icon: netflix
+              href: https://netflix.com/
+
+
+
+  widgets:
+    - greeting:
+        text_size: xl
+        text: Welcome Diogo Silva!
+  
+    # Widget for weather
+    - openmeteo:
+        label: Weather # optional
+        timezone: Europe/Lisbon # optional
+        units: metric # or imperial
+        latitude: 41.1905758
+        longitude: -8.3863183
+        cache: 5 # Time in minutes to cache API responses, to stay within limits
+
+    - resources: false
+    - search:
+        provider: google
+        target: _blank
+    # Uncomment to enable Kubernetes integration
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "Kubernetes cluster"
+        nodes:
+          show: false
+          cpu: true
+          memory: true
+          showLabel: true
+  kubernetes:
+    # change mode to 'cluster' to use RBAC service account
+    mode: cluster
+  docker:
+    
+
+persistence:
+  logs:
+    enabled: true
+    type: emptyDir
+    mountPath: /app/config/logs
+
+resources:
+  requests:
+    memory: 10Mi
+    cpu: 10m
+  limits:
+    memory: 200Mi
+    cpu: 500m

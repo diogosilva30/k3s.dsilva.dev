@@ -1,0 +1,252 @@
+# values.yaml template file. Has variable placeholders that will be inject by terraform
+# Based from: https://github.com/techno-tim/launchpad/blob/master/kubernetes/kube-prometheus-stack/values.yml
+# Original values.yaml: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+
+fullnameOverride: prometheus
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: true
+    configReloaders: true
+    general: true
+    k8s: true
+    kubeApiserverAvailability: true
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: true
+    kubeApiserverSlos: true
+    kubelet: true
+    kubeProxy: true
+    kubePrometheusGeneral: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    kubeScheduler: true
+    kubeStateMetrics: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true
+    prometheusOperator: true
+
+prometheus:
+  enabled: true
+  prometheusSpec:
+    replicas: 1
+    replicaExternalLabelName: "replica"
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    retention: 6h
+    enableAdminAPI: true
+    walCompression: true
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    # Annotations for prometheus Ingress
+    annotations:
+      external-dns.alpha.kubernetes.io/target: "${externaldns_target}"
+      # Protect service with SSO
+      traefik.ingress.kubernetes.io/router.middlewares: ${traefik_auth_middleware}
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/description: Metrics-based monitoring system
+      gethomepage.dev/group: Monitoring
+      gethomepage.dev/icon: prometheus.png
+      gethomepage.dev/name: Prometheus
+
+    
+    # Hostnames.
+    # Must be provided if Ingress is enable.
+    hosts:
+      - ${prometheus_hostname}
+
+    # Path for prometheus ingress
+    path: /
+
+alertmanager:
+  fullnameOverride: alertmanager
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    # Annotations for alert manager Ingress
+    annotations:
+      external-dns.alpha.kubernetes.io/target: "${externaldns_target}"
+      # Protect service with SSO
+      traefik.ingress.kubernetes.io/router.middlewares: ${traefik_auth_middleware}
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/description: Alertmanager handles alerts sent by client applications such as the Prometheus server.
+      gethomepage.dev/group: Monitoring
+      gethomepage.dev/icon: alertmanager.png
+      gethomepage.dev/name: Alert Manager
+
+    
+    # Hostnames.
+    # Must be provided if Ingress is enable.
+    hosts:
+      - ${alert_manager_hostname}
+
+    # Path for alert manager ingress
+    path: /
+
+grafana:
+  enabled: true
+  fullnameOverride: grafana
+  forceDeployDatasources: false
+  forceDeployDashboards: false
+  defaultDashboardsEnabled: true
+  defaultDashboardsTimezone: Europe/Lisbon
+  serviceMonitor:
+    enabled: true
+  # # Custom configuration for grafana
+  # grafana.ini:
+  #   # Disable grafana authentication
+  #   auth:
+  #     disable_login_form: true
+  #     disable_signout_menu: true
+  #     anonymous:
+  #       enabled: True
+  #   server:
+  #     domain: ${grafana_hostname}
+  #     protocol: https
+  #     root_url: "%(protocol)s://%(domain)s:%(http_port)s/"
+  #     #org_role: Admin
+  #   # auth.basic:
+  #   #   enabled: False
+  # #   server:
+  # #     domain: ${grafana_hostname}
+
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    # Annotations for Grafana Ingress
+    annotations:
+      external-dns.alpha.kubernetes.io/target: "${externaldns_target}"
+      # Protect service with SSO
+      traefik.ingress.kubernetes.io/router.middlewares: ${traefik_auth_middleware}
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/description: Analytics & monitoring solution
+      gethomepage.dev/group: Monitoring
+      gethomepage.dev/icon: grafana.png
+      gethomepage.dev/name: Grafana
+
+    
+    # Hostnames.
+    # Must be provided if Ingress is enable.
+    hosts:
+      - ${grafana_hostname}
+
+    # Path for grafana ingress
+    path: /
+
+  
+
+kubelet:
+  enabled: true
+  serviceMonitor:
+    metricRelabelings:
+      - action: replace
+        sourceLabels:
+          - node
+        targetLabel: instance
+
+kubeControllerManager:
+  enabled: true
+  endpoints: ${jsonencode(servers_ips)}
+
+coreDns:
+  enabled: true
+
+kubeDns:
+  enabled: false
+
+kubeEtcd:
+  enabled: true
+  endpoints: ${jsonencode(servers_ips)}
+  service:
+    enabled: true
+    port: 2381
+    targetPort: 2381
+
+kubeScheduler:
+  enabled: true
+  endpoints: ${jsonencode(servers_ips)}
+
+kubeProxy:
+  enabled: true
+  endpoints: ${jsonencode(servers_ips)}
+
+kubeStateMetrics:
+  enabled: true
+
+kube-state-metrics:
+  fullnameOverride: kube-state-metrics
+  selfMonitor:
+    enabled: true
+  prometheus:
+    monitor:
+      enabled: true
+      relabelings:
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: kubernetes_node
+
+nodeExporter:
+  enabled: true
+  serviceMonitor:
+    relabelings:
+      - action: replace
+        regex: (.*)
+        replacement: $1
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: kubernetes_node
+
+prometheus-node-exporter:
+  fullnameOverride: node-exporter
+  podLabels:
+    jobLabel: node-exporter
+  extraArgs:
+    - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($|/)
+    - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
+  service:
+    portName: http-metrics
+  prometheus:
+    monitor:
+      enabled: true
+      relabelings:
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: kubernetes_node
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 250m
+    limits:
+      memory: 2048Mi
+
+prometheusOperator:
+  enabled: true
+  prometheusConfigReloader:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 50Mi
+      limits:
+        memory: 100Mi
+
+
+
+thanosRuler:
+  enabled: false

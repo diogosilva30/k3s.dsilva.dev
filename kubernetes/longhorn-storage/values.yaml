@@ -1,0 +1,18 @@
+# values.yaml template file. Has variable placeholders that will be inject by terraform
+# Original values.yaml: https://github.com/longhorn/charts/blob/master/charts/longhorn/values.yaml
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  host: ${hostname}
+  # Enable this in order to enable that the backend service will be connected at port 443
+  secureBackends: true
+  path: /
+  annotations:
+    external-dns.alpha.kubernetes.io/target: "${externaldns_target}"
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Storage management
+    gethomepage.dev/group: Services
+    gethomepage.dev/icon: longhorn.png
+    gethomepage.dev/name: Longhorn
+

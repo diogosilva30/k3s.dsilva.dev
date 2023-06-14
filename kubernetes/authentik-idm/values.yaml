@@ -1,0 +1,17 @@
+# Original values.yaml:
+# https://github.com/goauthentik/helm/blob/main/charts/authentik/values.yaml
+
+authentik:
+    secret_key: ${authentik_secret_key}
+    # This sends anonymous usage-data, stack traces on errors and
+    # performance data to sentry.io, and is fully opt-in
+    error_reporting:
+        enabled: true
+    postgresql:
+        password: ${postgres_password}
+  
+postgresql:
+    enabled: true
+    postgresqlPassword: ${postgres_password}
+redis:
+    enabled: true
