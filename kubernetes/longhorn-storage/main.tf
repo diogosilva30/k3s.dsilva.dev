@@ -9,8 +9,8 @@ resource "helm_release" "longhorn" {
   values = [
     templatefile("${path.module}/values.yaml",
       {
-        hostname                = var.hostname
-        externaldns_target      = var.externaldns_target
+        hostname           = var.hostname
+        externaldns_target = var.externaldns_target
       }
     )
   ]

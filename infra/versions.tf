@@ -1,13 +1,9 @@
 terraform {
-  backend "s3" {
-    bucket                      = "terraform-states"
-    key                         = "k3s-infra.tfstate"
-    endpoint                    = "https://s3-api.dsilva.dev"
-    force_path_style            = true
-    region                      = "eu-south-2"
-    skip_region_validation      = true
-    skip_credentials_validation = true
-    skip_metadata_api_check     = true
+  backend "cloud" {
+    organization = "dsilva"
+    workspaces {
+      name = "k3s-kubernetes"
+    }
   }
   required_providers {
     # https://github.com/Telmate/terraform-provider-proxmox
