@@ -6,18 +6,11 @@ spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
-    - matrix:
-        generators:
-          - clusters:
-              selector:
-                # Target all clusters
-                matchLabels:
-                  argocd.argoproj.io/secret-type: "cluster"
-          - git:
-              repoURL: &repo https://github.com/diogosilva30/k3s.dsilva.dev.git
-              revision: HEAD
-              directories:
-                - path: apps/*
+    - git:
+        repoURL: &repo https://github.com/diogosilva30/k3s.dsilva.dev.git
+        revision: HEAD
+        directories:
+          - path: apps/*
   template:
     metadata:
       name: "{{ .name }}-{{ .path.basenameNormalized }}"
@@ -32,13 +25,13 @@ spec:
         kustomize:
           # Need to manually set annotations for now: https://github.com/argoproj/argo-cd/issues/11213
           commonAnnotations:
-            dns: "{{.metadata.annotations.dns}}"
-            name: "{{.metadata.annotations.name}}"
-            environment: "{{ .nameNormalized }}"
+            dns: lab.local
+            name: LAB
+            environment: LAB
             # Integration with external-dns
-            external-dns.alpha.kubernetes.io/target: "{{ .metadata.annotations.dns }}"
+            external-dns.alpha.kubernetes.io/target: lab.local
       destination:
-        server: "{{ .server }}"
+        server: https://kubernetes.default.svc
         namespace: "{{ .path.basenameNormalized }}"
       syncPolicy:
         automated:
