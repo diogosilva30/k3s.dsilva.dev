@@ -13,7 +13,7 @@ spec:
           - path: apps/*
   template:
     metadata:
-      name: "{{ .name }}-{{ .path.basenameNormalized }}"
+      name: "{{ .path.basenameNormalized }}"
     spec:
       project: default
       source:
