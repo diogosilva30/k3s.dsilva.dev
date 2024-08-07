@@ -4,9 +4,12 @@ kind: Kustomization
 helmGlobals:
   chartHome: ../../charts
 
+resources:
+  - manifests/pihole-password.yaml
+
 helmCharts:
   - name: external-dns
-    repo: https://charts.bitnami.com/bitnami
+    repo: oci://registry-1.docker.io/bitnamicharts
     namespace: external-dns
     releaseName: external-dns
     version: 8.3.4
@@ -15,3 +18,5 @@ helmCharts:
       provider: pihole
       pihole:
         server: http://192.168.1.203
+        # The encrypted secret in "manifests/pihole-password.yaml"
+        secretName: pihole-password
