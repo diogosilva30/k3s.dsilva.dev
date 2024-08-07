@@ -1,0 +1,53 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: common
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                # Target all clusters
+                matchLabels:
+                  argocd.argoproj.io/secret-type: "cluster"
+          - git:
+              repoURL: &repo https://github.com/diogosilva30/k3s.dsilva.dev.git
+              revision: HEAD
+              directories:
+                - path: apps/*
+  template:
+    metadata:
+      name: "{{ .name }}-{{ .path.basenameNormalized }}"
+    spec:
+      project: default
+      source:
+        repoURL: *repo
+        targetRevision: HEAD
+        path: "{{ .path.path }}"
+        # Inject the cluster annotations into the manifests
+        # From: https://github.com/argoproj/argo-cd/discussions/9042#discussioncomment-4398836
+        kustomize:
+          # Need to manually set annotations for now: https://github.com/argoproj/argo-cd/issues/11213
+          commonAnnotations:
+            dns: "{{.metadata.annotations.dns}}"
+            name: "{{.metadata.annotations.name}}"
+            environment: "{{ .nameNormalized }}"
+            # Integration with external-dns
+            external-dns.alpha.kubernetes.io/target: "{{ .metadata.annotations.dns }}"
+      destination:
+        server: "{{ .server }}"
+        namespace: "{{ .path.basenameNormalized }}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          # Needs server side apply because some
+          # resources are too big to fit in the
+          # lastAppliedConfig annotation
+          # https://argo-cd.readthedocs.io/en/stable/user-guide/sync-options/#server-side-apply
+          - ServerSideApply=true
