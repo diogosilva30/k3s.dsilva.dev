@@ -32,6 +32,11 @@ spec:
       selfHeal: true
     syncOptions:
       - allowEmpty=true
+      # Needs server side apply because some
+      # resources are too big to fit in the
+      # lastAppliedConfig annotation
+      # https://argo-cd.readthedocs.io/en/stable/user-guide/sync-options/#server-side-apply
+      - ServerSideApply=true
 status:
   health: {}
   summary: {}

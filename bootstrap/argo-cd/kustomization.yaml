@@ -48,14 +48,6 @@ configMapGenerator:
       # Disable HTTPS redirection
       - server.insecure="true"
 
-replicas:
-  - name: argocd-repo-server
-    count: 2
-  - name: argocd-server
-    count: 2
-  - name: argocd-redis-ha-haproxy
-    count: 3
-
 resources:
   # Prometheus operator CRDs
   - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.75.2/bundle.yaml
@@ -64,11 +56,6 @@ resources:
   - manifests/service-monitors.yaml
   # ArgoCD Image Updater
   - https://raw.githubusercontent.com/argoproj-labs/argocd-image-updater/stable/manifests/install.yaml
-
-patchesStrategicMerge:
-  # Apply patch to scale up the application controller and enable sharding
-  # https://argo-cd.readthedocs.io/en/stable/operator-manual/high_availability/#argocd-application-controller
-  - manifests/application-controller-patch.yaml
 
 # Our dynamic environment-specific variables are injects in every manifests
 # as annotations (check `kustomize.commonAnnotations` in `project/common.yaml`).
