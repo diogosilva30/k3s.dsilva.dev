@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmGlobals:
+  chartHome: ../../charts
+
+resources:
+  - manifests/ingress.yaml
+
+helmCharts:
+  - name: vaultwarden
+    repo: https://guerzon.github.io/vaultwarden
+    namespace: vaultwarden
+    releaseName: vaultwarden
+    version: 0.23.1
+    valuesFile: values.yaml
+
+replacements:
+  - source:
+      kind: Ingress
+      name: vaultwarden
+      fieldPath: metadata.annotations.dns
+    targets:
+      - select:
+          kind: Ingress
+          name: vaultwarden
+        fieldPaths:
+          - spec.rules.0.host
+        options:
+          # This keeps the "vault." prefix
+          delimiter: "."
+          index: 1

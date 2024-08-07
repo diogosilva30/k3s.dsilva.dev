@@ -1,0 +1,5 @@
+# Default values: https://github.com/guerzon/vaultwarden/blob/v0.23.1/charts/vaultwarden/values.yaml
+
+domain: http://vault.lab.local:844
+# Number of days to retain events stored in the database.
+eventsDayRetain: 30

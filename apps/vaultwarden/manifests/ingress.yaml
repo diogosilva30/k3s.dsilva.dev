@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vaultwarden
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Password manager
+    gethomepage.dev/group: Security
+    gethomepage.dev/icon: bitwarden
+    gethomepage.dev/name: Vaultwarden
+spec:
+  rules:
+    # DNS will be replace by kustomize
+    - host: vault.$(DNS)
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: vaultwarden
+                port:
+                  name: http
