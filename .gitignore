@@ -2,7 +2,6 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=homeassistant,macos,python,terraform
 ### HomeAssistant ###
 # Files with personal details
-*.crt
 *.csr
 *.key
 .google.token
