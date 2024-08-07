@@ -14,4 +14,4 @@ helmCharts:
       policy: upsert-only
       provider: pihole
       pihole:
-        server: 192.168.1.203
+        server: http://192.168.1.203
