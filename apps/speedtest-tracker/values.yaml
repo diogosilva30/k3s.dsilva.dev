@@ -1,0 +1,3 @@
+# Default values: https://github.com/sOblivionsCall/charts/blob/speedtest-tracker-3.0.4/speedtest-tracker/values.yaml
+eula:
+  OOKLA_EULA_GDPR: true

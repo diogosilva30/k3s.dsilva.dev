@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: speedtest-tracker
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Speedtest tracker
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: speedtest-tracker.svg
+    gethomepage.dev/name: Speedtest Tracker
+spec:
+  rules:
+    # DNS will be replace by kustomize
+    - host: speedtest.$(DNS)
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: speedtest-tracker
+                port:
+                  name: http
