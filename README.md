@@ -17,7 +17,7 @@ To provision the entire infrastructure, follow the steps below:
 
 ```bash
 
-git clone  https://github.com/diogosilv30/lab.dsilva.dev.git
+git clone  https://github.com/diogosilv30/k3s.dsilva.dev.git
 
 ```
 
@@ -26,9 +26,8 @@ git clone  https://github.com/diogosilv30/lab.dsilva.dev.git
 2. Navigate to the cloned directory:
 
 ```bash
-
-cd  lab.dsilva.dev
-
+cd  k3s.dsilva.dev
+:
 ```
 
 3. Define the following environment variables:

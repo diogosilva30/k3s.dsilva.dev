@@ -1,0 +1,37 @@
+# Based from https://argo-cd.readthedocs.io/en/stable/operator-manual/custom_tools/#adding-tools-via-volume-mounts
+# This patch changes the kustomize version to 5.2.1
+# This enables support for OCI helm charts in kustomize
+# https://github.com/kubernetes-sigs/kustomize/pull/5167
+
+# 1. Define an emptyDir volume which will hold the custom binaries
+- op: add
+  path: /spec/template/spec/volumes/- # "-" means append to the array
+  value:
+    # We don't include "-" here because we already appending to the array above
+    name: custom-tools
+    emptyDir: {}
+
+# 2. Use an init container to download/copy custom binaries into the emptyDir
+- op: add
+  path: /spec/template/spec/initContainers/- # "-" means append to the array
+  value:
+    # We don't include "-" here because we already appending to the array above
+    name: download-kustomize-v5-2-1
+    image: alpine:3.8
+    command: [sh, -c]
+    args:
+      - wget -qO- https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.2.1/kustomize_v5.2.1_linux_amd64.tar.gz | tar -xvzf - &&
+        mkdir -p /custom-tools/ &&
+        mv kustomize /custom-tools/kustomize_5_2_1
+    volumeMounts:
+      - mountPath: /custom-tools
+        name: custom-tools
+
+# 3. Volume mount the custom binary to the bin directory (overriding the existing version)
+- op: add
+  path: /spec/template/spec/containers/0/volumeMounts/- # "-" means append to the array
+  value:
+    # We don't include "-" here because we already appending to the array above
+    mountPath: /usr/local/bin/kustomize
+    name: custom-tools
+    subPath: kustomize_5_2_1

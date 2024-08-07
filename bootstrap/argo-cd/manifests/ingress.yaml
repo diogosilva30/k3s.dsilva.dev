@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-ingress
+  namespace: argocd
+  annotations:
+    traefik.ingress.kubernetes.io/rewrite-target: /
+    # Register in "DevOps" center page
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: GitOps operations
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: argocd.png
+    gethomepage.dev/name: ArgoCD
+spec:
+  rules:
+    # DNS will be replace by kustomize
+    - host: argo.$(DNS)
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  name: http

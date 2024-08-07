@@ -1,0 +1,11 @@
+# Allow argocd-server to exec into pods
+# https://argo-cd.readthedocs.io/en/stable/operator-manual/web_based_terminal/#enabling-the-terminal
+- op: add
+  path: /rules/-
+  value:
+    apiGroups:
+      - ""
+    resources:
+      - pods/exec
+    verbs:
+      - create

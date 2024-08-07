@@ -1,0 +1,6 @@
+image:
+  tag: 1.23.13-debian
+
+# Enable the service monitor to scrape
+# prometheus metrics
+serviceMonitor.enabled: true

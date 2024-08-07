@@ -1,0 +1,72 @@
+# We create two ingress for uptimekuma. The first one is for /status
+# paths which are status pages that we want to publicly expose.
+# This ingress is NOT protected by Single Sign On.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: uptimekuma-ingress-unprotected
+  namespace: uptimekuma
+  annotations:
+    traefik.ingress.kubernetes.io/rewrite-target: /
+    # This route needs to have a higher priority than the other one
+    traefik.ingress.kubernetes.io/router.priority: "42"
+    # No forward auth middleware for paths starting with "/status"
+spec:
+  rules:
+    # DNS will be replace by kustomize
+    - host: uptime.$(DNS)
+      http:
+        paths:
+          - path: /status
+            pathType: Prefix
+            backend: &backend
+              service:
+                name: uptime-kuma
+                port:
+                  name: http
+          # This API resource also needs to be publicly accessible
+          - path: /api/status-page
+            pathType: Prefix
+            backend: *backend
+          - path: /assets
+            pathType: Prefix
+            backend: *backend
+          - path: /upload
+            pathType: Prefix
+            backend: *backend
+          - path: /icon.svg
+            pathType: Prefix
+            backend: *backend
+---
+# The second ingress is for the rest of the paths which are protected
+# by Single Sign On.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: uptimekuma-ingress
+  namespace: uptimekuma
+  annotations:
+    traefik.ingress.kubernetes.io/rewrite-target: /
+    traefik.ingress.kubernetes.io/router.priority: "32"
+    # # Use the OIDC forward authentication middleware created in Terraform to protect
+    # # this route
+    # traefik.ingress.kubernetes.io/router.middlewares: traefik-forward-auth@kubernetescrd
+    # Register in "DevOps" center page
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/description: Uptime monitoring
+    gethomepage.dev/group: Monitoring
+    gethomepage.dev/icon: uptime-kuma.svg
+    gethomepage.dev/name: Uptime Kuma
+spec:
+  rules:
+    # DNS will be replace by kustomize
+    - host: uptime.$(DNS)
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: uptime-kuma
+                port:
+                  name: http

@@ -1,0 +1,112 @@
+kind: Kustomization
+namespace: argocd
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+configMapGenerator:
+  - behavior: merge
+    name: argocd-cm
+    literals:
+      - |
+        repository.credentials=- passwordSecret:
+            key: git_token
+            name: autopilot-secret
+          url: https://github.com/
+          usernameSecret:
+            key: git_username
+            name: autopilot-secret
+      - kustomize.buildOptions=--enable-alpha-plugins --enable-helm --load-restrictor LoadRestrictionsNone
+      # https://github.com/argoproj/argo-cd/issues/10456#issuecomment-1249381338
+      - |
+        resource.exclusions=
+          - apiGroups:
+            - cilium.io
+            kinds:
+            - CiliumIdentity
+            clusters:
+            - "*"
+      # Enable web terminal to exec into pods
+      # https://argo-cd.readthedocs.io/en/stable/operator-manual/web_based_terminal/
+      - exec.enabled="true"
+      - timeout.reconciliation=15s
+      # Need to specify URL of argo, otherwise we get error on OIDC:
+      # https://github.com/argoproj/argo-helm/issues/1593
+      - url="https://argo.lab.local"
+      # Configure OIDC authentication
+      # https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/#existing-oidc-provider
+      - |
+        oidc.config=
+          name: Keycloak Shared Services
+          issuer: https://idp.dsilva.dev/realms/master
+          clientID: argocd
+          clientSecret: $oidc.keycloak.clientSecret
+          requestedScopes: ["openid", "profile", "email", "groups"]
+          redirectURL: https://argo.lab.local/
+
+  - behavior: merge
+    name: argocd-cmd-params-cm
+    literals:
+      # Disable HTTPS redirection
+      - server.insecure="true"
+
+replicas:
+  - name: argocd-repo-server
+    count: 2
+  - name: argocd-server
+    count: 2
+  - name: argocd-redis-ha-haproxy
+    count: 3
+
+resources:
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v2.9.6/manifests/ha/install.yaml
+  - manifests/ingress.yaml
+  - manifests/service-monitors.yaml
+  # ArgoCD Image Updater
+  - https://raw.githubusercontent.com/argoproj-labs/argocd-image-updater/stable/manifests/install.yaml
+
+patchesStrategicMerge:
+  # Apply patch to scale up the application controller and enable sharding
+  # https://argo-cd.readthedocs.io/en/stable/operator-manual/high_availability/#argocd-application-controller
+  - manifests/application-controller-patch.yaml
+
+# Our dynamic environment-specific variables are injects in every manifests
+# as annotations (check `kustomize.commonAnnotations` in `project/common.yaml`).
+# So we just need to make a kustomize replacement of the value we want to replace
+# with the annotation value
+replacements:
+  - source:
+      kind: Ingress
+      name: argocd-ingress
+      fieldPath: metadata.annotations.dns
+    targets:
+      - select:
+          kind: Ingress
+          name: argocd-ingress
+        fieldPaths:
+          - spec.rules.0.host
+        options:
+          # This keeps the "argo." prefix
+          delimiter: "."
+          index: 1
+
+# Add the patch to the deployment
+patches:
+  # https://argo-cd.readthedocs.io/en/stable/operator-manual/custom_tools/
+  - target:
+      kind: Deployment
+      name: argocd-repo-server
+    path: manifests/repo-server-deployment-patch.yaml
+  - target:
+      kind: Role
+      name: argocd-server
+    path: manifests/web-terminal-permission-patch.yaml
+
+  # reset the crbs to `subject.namespace: default`, so that argo-cd will later change them to the actual ns
+  # From https://github.com/argoproj-labs/argocd-autopilot/blob/main/manifests/ha/kustomization.yaml
+  - target:
+      group: rbac.authorization.k8s.io
+      version: v1
+      kind: ClusterRoleBinding
+    patch: |-
+      - op: replace
+        path: /subjects/0/namespace
+        value: default

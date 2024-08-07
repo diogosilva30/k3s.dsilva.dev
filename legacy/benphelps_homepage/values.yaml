@@ -121,9 +121,6 @@ config:
         - Github:
             - icon: github-light
               href: https://github.com/diogosilva30
-        - GitLab:
-            - icon: gitlab
-              href: https://gitlab.ubiwhere.com/desilva
   
     - Developer Tools:
         - Homepage Documentation:
