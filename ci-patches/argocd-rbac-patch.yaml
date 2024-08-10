@@ -1,0 +1,14 @@
+# Kubeclt patch to sync groups from keycloak
+# with ArgoCD roles
+# To add a new group, add a new line to the
+# policy.csv file using the format
+# g, <group name>, role:<role name>
+# Where <group name> is the name of the group
+# in keycloak and <role name> is the name of
+# the role in ArgoCD
+# Apply this patch with:
+# kubectl -n argocd patch configmap argocd-rbac-cm --patch "$(cat ci-patches/argocd-rbac-patch.yaml)"
+data:
+  policy.csv: |
+    g, ReadOnly, role:readonly
+    g, ArgoAdmin, role:admin

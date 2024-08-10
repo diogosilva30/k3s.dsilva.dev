@@ -2,6 +2,20 @@
 # 👋 Welcome to k3s.dsilva.dev :test_tube:
 
   
+# Steps:
+
+```shell
+export PRIVATEKEY="private.key"
+export PUBLICKEY="public.crt"
+export NAMESPACE="sealed-secrets"
+export SECRETNAME="keys"
+
+openssl req -x509 -days 358000 -nodes -newkey rsa:4096 -keyout "$PRIVATEKEY" -out "$PUBLICKEY" -subj "/CN=sealed-secret/O=sealed-secret"
+
+kubectl create namespace "$NAMESPACE"
+kubectl -n "$NAMESPACE" create secret tls "$SECRETNAME" --cert="$PUBLICKEY" --key="$PRIVATEKEY"
+kubectl -n "$NAMESPACE" label secret "$SECRETNAME" sealedsecrets.bitnami.com/sealed-secrets-key=active
+```
 
 ### This open-source repository showcases a fully automated homelab k3s cluster on Proxmox, managed with Terraform and ArgoCD :rocket: 
 
