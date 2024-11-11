@@ -51,7 +51,6 @@ configMapGenerator:
 resources:
   # Prometheus operator CRDs
   - https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.75.2/bundle.yaml
-  - https://raw.githubusercontent.com/argoproj/argo-cd/v2.9.6/manifests/ha/install.yaml
   - manifests/ingress.yaml
   - manifests/service-monitors.yaml
   # ArgoCD Image Updater
