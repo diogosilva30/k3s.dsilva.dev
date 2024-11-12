@@ -13,8 +13,7 @@ setup_argocd_autopilot() {
     # Run the ArgoCD Autopilot bootstrap command
     argocd-autopilot repo bootstrap \
         --app "https://github.com/argoproj-labs/argocd-autopilot/manifests/insecure" \
-        --recover \
-        --hide-password 
+        --recover
     if [[ $? -eq 0 ]]; then
         echo "ArgoCD Autopilot setup completed successfully."
     else
