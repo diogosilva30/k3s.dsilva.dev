@@ -1,19 +1,19 @@
 #!/bin/bash
 # Usage: ./hack/setup_argocd.sh -t $GIT_TOKEN -r $GIT_REPO -c $CLUSTER_NAME
 
+GIT_REPO=$(git config --get remote.origin.url)
+CLUSTER_NAME="homelab"
+echo "GIT_REPO: $GIT_REPO"
+
 # Function to setup ArgoCD Autopilot
 setup_argocd_autopilot() {
-    local git_token="$1"
-    local git_repo="$2"
-    local cluster_name="$3"
-
-    export GIT_TOKEN="$git_token"
-    export GIT_REPO="$git_repo"
-    export CLUSTER_NAME="$cluster_name"
+    echo "Setting up ArgoCD Autopilot..."
     # Run the ArgoCD Autopilot bootstrap command
     argocd-autopilot repo bootstrap \
         --app "https://github.com/argoproj-labs/argocd-autopilot/manifests/insecure" \
-        --recover
+        --recover \
+        --git-token "$GIT_TOKEN" \
+        --repo "$GIT_REPO"
     if [[ $? -eq 0 ]]; then
         echo "ArgoCD Autopilot setup completed successfully."
     else
@@ -21,23 +21,48 @@ setup_argocd_autopilot() {
         exit 1
     fi
 }
+setup_git_repo(){
+    local name="git-repo"
+    
+      # Create and render the Kubernetes secret manifest directly with EOF
+    cat <<EOF > gitrepo-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+name: $name
+namespace: argocd
+labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+type: git
+url: $GIT_REPO
+EOF
+    # Apply the secret
+    kubectl apply -f gitrepo-secret.yaml
+    rm -f gitrepo-secret.yaml
 
-# Parse command line arguments
-while getopts ":t:r:c:" opt; do
-    case ${opt} in
-        t) git_token="$OPTARG" ;;
-        r) git_repo="$OPTARG" ;;
-        c) cluster_name="$OPTARG" ;;
-        \?) echo "Usage: $0 -t git_token -r git_repo -c cluster_name" >&2
-            exit 1 ;;
-    esac
-done
+}
+setup_argocd_admin_password(){
 
-# Validate required arguments
-if [ -z "$git_token" ] || [ -z "$git_repo" ] || [ -z "$cluster_name" ]; then
-    echo "Usage: $0 -t git_token -r git_repo -c cluster_name"
-    exit 1
-fi
+    if [[ -z $ARGOCD_PASSWORD ]]; then
+        echo "ARGOCD_PASSWORD is not set. Exiting."
+        exit 1
+    fi
+    echo "Changing the ArgoCD admin password..."
+    # Get the ArgoCD admin password
+    password=$(argocd account bcrypt --password $ARGOCD_PASSWORD)
+    kubectl -n argocd patch secret argocd-secret \
+  -p '{"stringData": {
+    "admin.password": "'$password'",
+    "admin.passwordMtime": "'$(date +%FT%T%Z)'"
+  }}'
+    # Restart the ArgoCD server pod
+    kubectl -n argocd rollout restart deployment argocd-server
+
+}
 
 # Call the setup function with parsed arguments
-setup_argocd_autopilot "$git_token" "$git_repo" "$cluster_name"
+setup_argocd_autopilot
+
+setup_git_repo
+setup_argocd_admin_password
