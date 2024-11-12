@@ -2,36 +2,29 @@ kind: Kustomization
 namespace: argocd
 apiVersion: kustomize.config.k8s.io/v1beta1
 
-configMapGenerator:
-  - behavior: merge
-    name: argocd-cm
-    literals:
-      # - |
-      #   repository.credentials=- passwordSecret:
-      #       key: git_token
-      #       name: autopilot-secret
-      #     url: https://github.com/
-      #     usernameSecret:
-      #       key: git_username
-      #       name: autopilot-secret
-      - kustomize.buildOptions=--enable-alpha-plugins --enable-helm --load-restrictor LoadRestrictionsNone
-      # Enable web terminal to exec into pods
-      # https://argo-cd.readthedocs.io/en/stable/operator-manual/web_based_terminal/
-      - exec.enabled="true"
-      - timeout.reconciliation=15s
-      # Need to specify URL of argo, otherwise we get error on OIDC:
-      # https://github.com/argoproj/argo-helm/issues/1593
-      - url="https://argo.lab.local"
-      # Configure OIDC authentication
-      # https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/#existing-oidc-provider
-      - |
-        oidc.config=
-          name: Keycloak Shared Services
-          issuer: https://idp.dsilva.dev/realms/master
-          clientID: argocd
-          clientSecret: $oidc.keycloak.clientSecret
-          requestedScopes: ["openid", "profile", "email", "groups"]
-          redirectURL: https://argo.lab.local/
+# configMapGenerator:
+#   - behavior: merge
+#     name: argocd-cm
+#     namespace: argocd
+#     literals:
+#       - kustomize.buildOptions=--enable-alpha-plugins --enable-helm --load-restrictor LoadRestrictionsNone
+#       # Enable web terminal to exec into pods
+#       # https://argo-cd.readthedocs.io/en/stable/operator-manual/web_based_terminal/
+#       - exec.enabled="true"
+#       - timeout.reconciliation=15s
+#       # Need to specify URL of argo, otherwise we get error on OIDC:
+#       # https://github.com/argoproj/argo-helm/issues/1593
+#       - url="https://argo.lab.local"
+#       # Configure OIDC authentication
+#       # https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/#existing-oidc-provider
+#       - |
+#         oidc.config=
+#           name: Keycloak Shared Services
+#           issuer: https://idp.dsilva.dev/realms/master
+#           clientID: argocd
+#           clientSecret: $oidc.keycloak.clientSecret
+#           requestedScopes: ["openid", "profile", "email", "groups"]
+#           redirectURL: https://argo.lab.local/
 
 resources:
   # Prometheus operator CRDs
